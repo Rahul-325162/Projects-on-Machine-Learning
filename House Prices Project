@@ -1,0 +1,103 @@
+# Kaggle Competition for House Prices: Advanced Regression Techniques
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import os
+print(os.getcwd())
+os.chdir(r"C:\Users\Rahul\..AAA Example data sets\Housing Prices data")
+
+
+df = pd.read_csv("train.csv")
+df.head()
+df.isnull().sum()
+sns.heatmap(df.isnull(),yticklabels=False,cbar=False,cmap='viridis')
+df.shape
+df['LotFrontage'] = df['LotFrontage'].fillna(df['LotFrontage'].mean())
+df['MasVnrType'] = df['MasVnrType'].fillna(df['MasVnrType'].mode()[0])
+df['MasVnrArea'] = df['MasVnrArea'].fillna(df['MasVnrArea'].mean())
+df['BsmtQual'] = df['BsmtQual'].fillna(df['BsmtQual'].mode()[0])
+df['BsmtCond'] = df['BsmtCond'].fillna(df['BsmtQual'].mode()[0])
+df['BsmtExposure'] = df['BsmtExposure'].fillna(df['BsmtExposure'].mode()[0])
+df['BsmtFinType1'] = df['BsmtFinType1'].fillna(df['BsmtFinType1'].mode()[0])
+df['BsmtFinType2'] = df['BsmtFinType2'].fillna(df['BsmtFinType2'].mode()[0])
+df['Electrical'] = df['Electrical'].fillna(df['Electrical'].mode()[0])
+df['FireplaceQu'] = df['FireplaceQu'].fillna(df['FireplaceQu'].mode()[0])
+df['GarageType'] = df['GarageType'].fillna(df['GarageType'].mode()[0])
+df['GarageYrBlt'] = df['GarageYrBlt'].fillna(df['GarageYrBlt'].mean())
+df['GarageFinish'] = df['GarageFinish'].fillna(df['GarageFinish'].mode()[0])
+df['GarageQual'] = df['GarageQual'].fillna(df['GarageQual'].mode()[0])
+df['GarageCond'] = df['GarageCond'].fillna(df['GarageCond'].mode()[0])
+df.drop(['Id','Alley','MiscFeature','GarageYrBlt','PoolQC','Fence'],axis=1,inplace=True)
+df.dropna(inplace=True)
+
+df_test = pd.read_csv("formulatedtest1.csv")
+df.shape
+columns=['MSZoning','Street','LotShape','LandContour','Utilities','LotConfig','LandSlope','Neighborhood',
+         'Condition2','BldgType','Condition1','HouseStyle','SaleType',
+        'SaleCondition','ExterCond',
+         'ExterQual','Foundation','BsmtQual','BsmtCond','BsmtExposure','BsmtFinType1','BsmtFinType2',
+        'RoofStyle','RoofMatl','Exterior1st','Exterior2nd','MasVnrType','Heating','HeatingQC',
+         'CentralAir',
+         'Electrical','KitchenQual','Functional',
+         'FireplaceQu','GarageType','GarageFinish','GarageQual','GarageCond','PavedDrive']
+# makeed a function to handel categorical variables
+def category_onehot_multcols(multcolumns):
+    df_final=final_df
+    i=0
+    for fields in multcolumns:
+        
+        print(fields)
+        df1=pd.get_dummies(final_df[fields],drop_first=True)
+        
+        final_df.drop([fields],axis=1,inplace=True)
+        if i==0:
+            df_final=df1.copy()
+        else:
+            
+            df_final=pd.concat([df_final,df1],axis=1)
+        i=i+1
+       
+        
+    df_final=pd.concat([final_df,df_final],axis=1)
+        
+    return df_final
+
+main_df=df.copy()
+final_df=pd.concat([df,df_test],axis=0)
+final_df.shape
+final_df=category_onehot_multcols(columns)
+# remove duplicats columns is data
+final_df =final_df.loc[:,~final_df.columns.duplicated()]
+# spliting data
+df__Train=final_df.iloc[:1458,:]
+df__Test=final_df.iloc[1458:,:]
+df__Test.drop(['SalePrice'],axis=1,inplace=True)
+
+X=df__Train.drop(['SalePrice'],axis=1)
+y=df__Train['SalePrice']
+# Fitting Multiple Linear Regression to the Training set
+# The library is same as it was for Simple Linear Regression
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression()
+regressor.fit(X, y)
+
+# Predicting the Test set results
+y_pred = regressor.predict(df__Test)
+df__Test.shape
+
+'''# Making the Confusion Matrix
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+print("Accuracy = {}%".format((cm.diagonal().sum()/cm.sum()) * 100))'''
+
+y_pred.shape
+
+##Create Sample Submission file and Submit using ANN
+y_pred=pd.DataFrame(y_pred)
+sub_df=pd.read_csv('sample_submission.csv')
+datasets=pd.concat([sub_df['Id'],y_pred],axis=1)
+datasets.columns=['Id','SalePrice']
+datasets.to_csv('sample_submission_finalz .csv',index=False)
