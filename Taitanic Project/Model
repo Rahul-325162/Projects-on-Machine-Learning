@@ -1,0 +1,60 @@
+# chek location directory to import data also can change location
+import os
+os.getcwd()
+'''os.chdir(r"C:\Users\Rahul")'''#here r is stand for ignoring optertion of backslash(\)
+
+import pandas as pd
+import seaborn as sns
+train1 = pd.read_csv("taitanic_train.csv")
+train1.head()
+# can chwk null value using map by sns lybrery
+'''sns.heatmap(train1.isnull(),cbar=False,cmap='viridis')'''
+# matplotlib is also stand for plotin our data on map(to chek variation, mean, mode etc.)
+'''import matplotlib.pyplot as plt
+plt.figure(figsize=(12,7))
+sns.boxplot(x='Pclass',y='Age',data=train1,palette='winter')'''
+# u can use dictnory to fill particular nan variable in data
+train = train1.fillna({'Age':30})
+train1.isnull().sum()
+train1.shape
+train1.info()
+# importing test data
+test_data = pd.read_csv("taitanic_test.csv")
+test_data.head()
+#filling NAN value using mean
+test_data['Age'] = test_data['Age'].fillna(test_data['Age'].mean())
+test_data.isnull().sum()
+# select particular columns to testing model 
+X_test = test_data.iloc[:, [1, 4]].values
+X_test.shape
+print(X_test)
+#chekin null value using heatmap
+'''sns.heatmap(train.isnull(),cbar=False,cmap='viridis')'''
+# X contian particular columns as Qustion
+# y contain answer columnn to train model
+X = train.iloc[:, [2, 5,]].values
+y = train.iloc[:, 1].values
+# Feature Scaling
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X = sc.fit_transform(X)
+X_test = sc.transform(X_test)
+# Fitting Random Forest Classification to the Training set
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators = 10, criterion = 'entropy')
+classifier.fit(X, y)
+# Predicting the Test set results
+y_pred = classifier.predict(X_test)
+# can sve our pridiction as csv 
+'''y_pred.to_csv('d:\out.csv')'''
+
+##Create Sample Submission file and Submit using ANN
+y_pred=pd.DataFrame(y_pred)  # here y_pred (arry ) converted to dataframe
+# read sample submission file to takeing reqired columns
+sub_df=pd.read_csv('gender_submission_taitenic.csv')
+# concat our pridiction to sample file column
+datasets=pd.concat([sub_df['PassengerId'],y_pred],axis=1)
+# set columns in final pridicton
+datasets.columns=['PassengerId','Survived']
+# save file 
+datasets.to_csv('final_sample_submission_taitanic .csv',index=False)
