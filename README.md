@@ -1,7 +1,3 @@
-Practice time......
+This repo contain all my projects and data
 
-
-
-
-
-Happy Learning guys....
+Explore it
